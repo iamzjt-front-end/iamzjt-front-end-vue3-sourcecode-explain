@@ -185,12 +185,16 @@ function createReactiveObject(
   collectionHandlers: ProxyHandler<any>,
   proxyMap: WeakMap<Target, any>
 ) {
+  // + 首先确定target是否是一个对象，因为proxy只能代理对象
   if (!isObject(target)) {
     if (__DEV__) {
       console.warn(`value cannot be made reactive: ${String(target)}`)
     }
     return target
   }
+  // + 如果target已经是一个代理对象的话，就直接return
+  // ?
+  // + 有一个列外就是：将reactive响应式对象转变成readonly只读对象，即：readonly(reactive())
   // target is already a Proxy, return it.
   // exception: calling readonly() on a reactive object
   if (
@@ -199,6 +203,8 @@ function createReactiveObject(
   ) {
     return target
   }
+  // +
+  // + 这里解决的是reactive多层嵌套的问题
   // target already has corresponding Proxy
   const existingProxy = proxyMap.get(target)
   if (existingProxy) {

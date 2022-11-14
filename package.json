@@ -32,8 +32,7 @@
     "build-runtime-esm": "node scripts/build.js runtime reactivity shared -af esm-bundler && node scripts/build.js vue -f esm-bundler-runtime && node scripts/build.js vue -f esm-browser-runtime",
     "build-ssr-esm": "node scripts/build.js compiler-sfc server-renderer -f esm-browser",
     "build-sfc-playground-self": "cd packages/sfc-playground && npm run build",
-    "preinstall": "node ./scripts/preinstall.js",
-    "postinstall": "simple-git-hooks"
+    "preinstall": "node ./scripts/preinstall.js"
   },
   "types": "test-dts/index.d.ts",
   "simple-git-hooks": {
@@ -74,8 +73,6 @@
     "csstype": "^3.0.3",
     "enquirer": "^2.3.2",
     "esbuild": "^0.14.35",
-    "eslint": "^7.7.0",
-    "eslint-plugin-jest": "26.1.5",
     "execa": "^4.0.2",
     "fs-extra": "^9.0.1",
     "jest": "^27.1.0",
@@ -84,7 +81,6 @@
     "marked": "^4.0.10",
     "minimist": "^1.2.0",
     "npm-run-all": "^4.1.5",
-    "prettier": "^2.7.1",
     "puppeteer": "^10.0.0",
     "rollup": "~2.38.5",
     "rollup-plugin-node-builtins": "^2.1.2",
@@ -95,7 +91,6 @@
     "semver": "^7.3.2",
     "serve": "^12.0.0",
     "terser": "^5.15.1",
-    "simple-git-hooks": "^2.8.1",
     "todomvc-app-css": "^2.3.0",
     "ts-jest": "^27.0.5",
     "tslib": "^2.4.0",
