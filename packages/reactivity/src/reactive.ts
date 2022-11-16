@@ -35,9 +35,9 @@ export const readonlyMap = new WeakMap<Target, any>()
 export const shallowReadonlyMap = new WeakMap<Target, any>()
 
 const enum TargetType {
-  INVALID = 0,
-  COMMON = 1,
-  COLLECTION = 2
+  INVALID = 0, // + 无效数据类型
+  COMMON = 1, // + Object 和 Array
+  COLLECTION = 2 // + 集合类型 Map、Set、WeakMap、WeakSet
 }
 
 function targetTypeMap(rawType: string) {
@@ -88,6 +88,7 @@ export type UnwrapNestedRefs<T> = T extends Ref ? T : UnwrapRefSimple<T>
  */
 export function reactive<T extends object>(target: T): UnwrapNestedRefs<T>
 export function reactive(target: object) {
+  // + 如果target已经是readonly对象，则直接返回
   // if trying to observe a readonly proxy, return the readonly version.
   if (isReadonly(target)) {
     return target
@@ -178,6 +179,15 @@ export function shallowReadonly<T extends object>(target: T): Readonly<T> {
   )
 }
 
+/**
+ * + 用来创建响应式对象
+ * @param {Target} target 原始对象
+ * @param {boolean} isReadonly 是否是只读类型
+ * @param {ProxyHandler<any>} baseHandlers 基础处理
+ * @param {ProxyHandler<any>} collectionHandlers 集合类型处理
+ * @param {WeakMap<Target, any>} proxyMap 已缓存的响应式对象集合
+ * @returns {any}
+ */
 function createReactiveObject(
   target: Target,
   isReadonly: boolean,
@@ -192,9 +202,8 @@ function createReactiveObject(
     }
     return target
   }
-  // + 如果target已经是一个代理对象的话，就直接return
-  // ?
-  // + 有一个列外就是：将reactive响应式对象转变成readonly只读对象，即：readonly(reactive())
+  // + 如果target已经是一个proxy的话，就直接return，这个proxy可能是用户自己new的
+  // + 有一个列外就是：给reactive调readonly，即：readonly(reactive())
   // target is already a Proxy, return it.
   // exception: calling readonly() on a reactive object
   if (
@@ -203,22 +212,25 @@ function createReactiveObject(
   ) {
     return target
   }
-  // +
-  // + 这里解决的是reactive多层嵌套的问题
+  // + 判断是否是proxyMap中已经存在的，proxyMap是用来存储所有的reactive
   // target already has corresponding Proxy
   const existingProxy = proxyMap.get(target)
+  // + 这里解决的是reactive多层嵌套的问题
   if (existingProxy) {
     return existingProxy
   }
   // only specific value types can be observed.
+  // + 只有白名单内的类型数据才能转变成响应式
   const targetType = getTargetType(target)
   if (targetType === TargetType.INVALID) {
     return target
   }
+  // ! 核心逻辑
   const proxy = new Proxy(
     target,
     targetType === TargetType.COLLECTION ? collectionHandlers : baseHandlers
   )
+  // + 缓存一下已经被代理的对象
   proxyMap.set(target, proxy)
   return proxy
 }
