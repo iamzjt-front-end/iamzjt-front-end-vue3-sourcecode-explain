@@ -14,7 +14,7 @@ import {
 import type { UnwrapRefSimple, Ref, RawSymbol } from './ref'
 
 export const enum ReactiveFlags {
-  SKIP = '__v_skip',
+  SKIP = '__v_skip', // todo
   IS_REACTIVE = '__v_isReactive',
   IS_READONLY = '__v_isReadonly',
   IS_SHALLOW = '__v_isShallow',

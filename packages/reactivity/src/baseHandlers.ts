@@ -214,9 +214,9 @@ function ownKeys(target: object): (string | symbol)[] {
 export const mutableHandlers: ProxyHandler<object> = {
   get,
   set,
-  deleteProperty,
-  has,
-  ownKeys
+  deleteProperty, // + 删除对象属性会触发deleteProperty函数
+  has, // + in操作符会触发has函数
+  ownKeys // + Object.getOwnPropertyNames访问对象属性名会触发ownKeys函数
 }
 
 export const readonlyHandlers: ProxyHandler<object> = {
