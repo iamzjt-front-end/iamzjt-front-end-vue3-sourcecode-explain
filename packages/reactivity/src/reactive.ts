@@ -18,7 +18,7 @@ export const enum ReactiveFlags {
   IS_REACTIVE = '__v_isReactive',
   IS_READONLY = '__v_isReadonly',
   IS_SHALLOW = '__v_isShallow',
-  RAW = '__v_raw'
+  RAW = '__v_raw' // + 判断target是否已经是一个响应式对象，因为响应式对象的__v_raw会指向它的原始对象，具体处理见：todo
 }
 
 export interface Target {
@@ -40,6 +40,7 @@ const enum TargetType {
   COLLECTION = 2 // + 集合类型 Map、Set、WeakMap、WeakSet
 }
 
+// + 数据类型匹配核心
 function targetTypeMap(rawType: string) {
   switch (rawType) {
     case 'Object':
@@ -55,7 +56,10 @@ function targetTypeMap(rawType: string) {
   }
 }
 
+// + 获取原始数据的数据类型
 function getTargetType(value: Target) {
+  // + 首先检测对象是否有__v_skip属性，以及对象是否不可扩展，满足其中一个就是无效对象
+  // + 举个栗子：Date类型、RegExp类型、Promise类型
   return value[ReactiveFlags.SKIP] || !Object.isExtensible(value)
     ? TargetType.INVALID
     : targetTypeMap(toRawType(value))
@@ -183,9 +187,9 @@ export function shallowReadonly<T extends object>(target: T): Readonly<T> {
  * + 用来创建响应式对象
  * @param {Target} target 原始对象
  * @param {boolean} isReadonly 是否是只读类型
- * @param {ProxyHandler<any>} baseHandlers 基础处理
+ * @param {ProxyHandler<any>} baseHandlers 基础处理（普通对象和数组）
  * @param {ProxyHandler<any>} collectionHandlers 集合类型处理
- * @param {WeakMap<Target, any>} proxyMap 已缓存的响应式对象集合
+ * @param {WeakMap<Target, any>} proxyMap 缓存已转成reactive的对象，映射关系：原始对象target -> 响应式对象reactive
  * @returns {any}
  */
 function createReactiveObject(
