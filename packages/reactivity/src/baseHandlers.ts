@@ -45,9 +45,17 @@ const builtInSymbols = new Set(
     .filter(isSymbol)
 )
 
+// + /*#__PURE__*/ 这个是给terser压缩工具用的，是一种非破坏性压缩。
+// + 意思就是：会告诉编辑器，如果没用到这玩意，可以放心删了。
+// + 这里的操作就是将get缓存起来，不用每次都重复创建get，但同时用不到还缓存就浪费了。
+
+// + 普通get
 const get = /*#__PURE__*/ createGetter()
+// + 浅层响应式
 const shallowGet = /*#__PURE__*/ createGetter(false, true)
+// + 只读
 const readonlyGet = /*#__PURE__*/ createGetter(true)
+// + 浅层只读
 const shallowReadonlyGet = /*#__PURE__*/ createGetter(true, true)
 
 const arrayInstrumentations = /*#__PURE__*/ createArrayInstrumentations()
