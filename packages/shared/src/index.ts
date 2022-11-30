@@ -67,15 +67,19 @@ export const isPromise = <T = any>(val: unknown): val is Promise<T> => {
   return isObject(val) && isFunction(val.then) && isFunction(val.catch)
 }
 
+// + 借用Object的toString方法判断是否是对象
 export const objectToString = Object.prototype.toString
+// + 调用上面的方法
 export const toTypeString = (value: unknown): string =>
   objectToString.call(value)
 
+// + 获取原始数据类型
 export const toRawType = (value: unknown): string => {
   // extract "RawType" from strings like "[object RawType]"
   return toTypeString(value).slice(8, -1)
 }
 
+// + 判断是否普通对象
 export const isPlainObject = (val: unknown): val is object =>
   toTypeString(val) === '[object Object]'
 
