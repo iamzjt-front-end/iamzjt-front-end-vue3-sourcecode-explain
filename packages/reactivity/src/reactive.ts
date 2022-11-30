@@ -19,7 +19,7 @@ export const enum ReactiveFlags {
   IS_REACTIVE = '__v_isReactive', // + 响应式数据
   IS_READONLY = '__v_isReadonly', // + 只读数据
   IS_SHALLOW = '__v_isShallow', // + 浅层数据
-  RAW = '__v_raw' // + 判断target是否已经是一个响应式对象，因为响应式对象的__v_raw会指向它的原始对象，具体处理见：todo
+  RAW = '__v_raw' // + 取原始对象target，具体处理见：createGetter 105行
 }
 
 export interface Target {
@@ -243,25 +243,31 @@ function createReactiveObject(
   return proxy
 }
 
+// + 是否是reactive响应式对象
 export function isReactive(value: unknown): boolean {
   if (isReadonly(value)) {
+    // + 如果入参是readonly，则返回原始数据
     return isReactive((value as Target)[ReactiveFlags.RAW])
   }
   return !!(value && (value as Target)[ReactiveFlags.IS_REACTIVE])
 }
 
+// + 是否是readonly只读对象
 export function isReadonly(value: unknown): boolean {
   return !!(value && (value as Target)[ReactiveFlags.IS_READONLY])
 }
 
+// + 是否是shallow浅层处理对象
 export function isShallow(value: unknown): boolean {
   return !!(value && (value as Target)[ReactiveFlags.IS_SHALLOW])
 }
 
+// + 判断一个对象是否是由reactive和readonly创建的proxy
 export function isProxy(value: unknown): boolean {
   return isReactive(value) || isReadonly(value)
 }
 
+// + 将响应式对象（由 reactive 定义的响应式）转换为普通对象
 export function toRaw<T>(observed: T): T {
   const raw = observed && (observed as Target)[ReactiveFlags.RAW]
   return raw ? toRaw(raw) : observed
@@ -269,13 +275,17 @@ export function toRaw<T>(observed: T): T {
 
 export type Raw<T> = T & { [RawSymbol]?: true }
 
+// + 标记一个对象，使其不能成为响应式数据
 export function markRaw<T extends object>(value: T): Raw<T> {
+  // + 定义为无须响应数据，调用def函数去给对象定义属性
   def(value, ReactiveFlags.SKIP, true)
   return value
 }
 
+// + 判断是否是对象，然后将其转换成reactive响应式对象
 export const toReactive = <T extends unknown>(value: T): T =>
   isObject(value) ? reactive(value) : value
 
+// + 判断是否是对象，然后将其转换成readonly对象
 export const toReadonly = <T extends unknown>(value: T): T =>
   isObject(value) ? readonly(value as Record<any, any>) : value

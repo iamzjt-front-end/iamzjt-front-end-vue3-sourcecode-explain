@@ -69,11 +69,11 @@ export const isPromise = <T = any>(val: unknown): val is Promise<T> => {
 
 // + 借用Object的toString方法判断是否是对象
 export const objectToString = Object.prototype.toString
-// + 调用上面的方法
+// + 调用上面的方法，转成类型字符串
 export const toTypeString = (value: unknown): string =>
   objectToString.call(value)
 
-// + 获取原始数据类型
+// + 获取原始数据类型字符串，截取后几位
 export const toRawType = (value: unknown): string => {
   // extract "RawType" from strings like "[object RawType]"
   return toTypeString(value).slice(8, -1)
@@ -150,10 +150,10 @@ export const invokeArrayFns = (fns: Function[], arg?: any) => {
 }
 
 /**
- *
- * @param {object} obj puto
- * @param {string | symbol} key
- * @param value
+ * * 定义对象属性
+ * @param {object} obj 普通对象
+ * @param {string | symbol} key 定义的键
+ * @param value 定义的值
  */
 export const def = (obj: object, key: string | symbol, value: any) => {
   Object.defineProperty(obj, key, {
