@@ -209,8 +209,9 @@ function createReactiveObject(
     }
     return target
   }
-  // + 如果target已经是一个Proxy的话，就直接return，这个proxy可能是用户自己new的
+  // + 如果target已经是一个Proxy的话，就直接return
   // + 有一个例外就是：给reactive调readonly，即：readonly(reactive())
+  // + 补充一下：正常情况下，target[ReactiveFlags.RAW] 这里是取不到的，只有嵌套的情况下，取值时触发get，然后createGetter里面判断是否是这个键，然后返回原始对象target
   // target is already a Proxy, return it.
   // exception: calling readonly() on a reactive object
   if (

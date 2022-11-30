@@ -149,6 +149,12 @@ export const invokeArrayFns = (fns: Function[], arg?: any) => {
   }
 }
 
+/**
+ *
+ * @param {object} obj puto
+ * @param {string | symbol} key
+ * @param value
+ */
 export const def = (obj: object, key: string | symbol, value: any) => {
   Object.defineProperty(obj, key, {
     configurable: true,
