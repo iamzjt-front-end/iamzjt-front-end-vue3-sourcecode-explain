@@ -207,7 +207,7 @@ function createReactiveObject(
     return target
   }
   // + 如果target已经是一个proxy的话，就直接return，这个proxy可能是用户自己new的
-  // + 有一个列外就是：给reactive调readonly，即：readonly(reactive())
+  // + 有一个例外就是：给reactive调readonly，即：readonly(reactive())
   // target is already a Proxy, return it.
   // exception: calling readonly() on a reactive object
   if (
