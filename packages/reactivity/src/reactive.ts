@@ -13,11 +13,12 @@ import {
 } from './collectionHandlers'
 import type { UnwrapRefSimple, Ref, RawSymbol } from './ref'
 
+// + 定义了各种标志对应的字符串（作为reactive对象的属性）的枚举
 export const enum ReactiveFlags {
-  SKIP = '__v_skip', // todo
-  IS_REACTIVE = '__v_isReactive',
-  IS_READONLY = '__v_isReadonly',
-  IS_SHALLOW = '__v_isShallow',
+  SKIP = '__v_skip', // + 无须响应的数据
+  IS_REACTIVE = '__v_isReactive', // + 响应式数据
+  IS_READONLY = '__v_isReadonly', // + 只读数据
+  IS_SHALLOW = '__v_isShallow', // + 浅层数据
   RAW = '__v_raw' // + 判断target是否已经是一个响应式对象，因为响应式对象的__v_raw会指向它的原始对象，具体处理见：todo
 }
 
@@ -90,6 +91,8 @@ export type UnwrapNestedRefs<T> = T extends Ref ? T : UnwrapRefSimple<T>
  * count.value // -> 1
  * ```
  */
+// + 可以看到reactive的入参类型是一个object，返回值类型是UnwrapNestedRefs，对嵌套的ref进行了解包
+// + 意味着：接收一个ref，其返回值也不用通过.value来获取，上方注释中的案例，也就是这个意思
 export function reactive<T extends object>(target: T): UnwrapNestedRefs<T>
 export function reactive(target: object) {
   // + 如果target已经是readonly对象，则直接返回
@@ -206,7 +209,7 @@ function createReactiveObject(
     }
     return target
   }
-  // + 如果target已经是一个proxy的话，就直接return，这个proxy可能是用户自己new的
+  // + 如果target已经是一个Proxy的话，就直接return，这个proxy可能是用户自己new的
   // + 有一个例外就是：给reactive调readonly，即：readonly(reactive())
   // target is already a Proxy, return it.
   // exception: calling readonly() on a reactive object
