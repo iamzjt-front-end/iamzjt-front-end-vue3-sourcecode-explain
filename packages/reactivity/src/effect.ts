@@ -9,10 +9,10 @@ import { ComputedRefImpl } from './computed';
 // which maintains a Set of subscribers, but we simply store them as
 // raw Sets to reduce memory overhead.
 type KeyToDepMap = Map<any, Dep>
-const targetMap = new WeakMap<any, KeyToDepMap>();
+const targetMap = new WeakMap<any, KeyToDepMap>(); // + 原始对象Map
 
 // The number of effects currently being tracked recursively.
-let effectTrackDepth = 0;
+let effectTrackDepth = 0; // + effect嵌套深度
 
 export let trackOpBit = 1;
 
@@ -45,8 +45,8 @@ export const ITERATE_KEY = Symbol(__DEV__ ? 'iterate' : '');
 export const MAP_KEY_ITERATE_KEY = Symbol(__DEV__ ? 'Map key iterate' : '');
 
 export class ReactiveEffect<T = any> {
-  active = true;
-  deps: Dep[] = [];
+  active = true; // + 是否激活
+  deps: Dep[] = []; // + 反向收集自身所在依赖列表
   parent: ReactiveEffect | undefined = undefined;
 
   /**
@@ -57,7 +57,7 @@ export class ReactiveEffect<T = any> {
   /**
    * @internal
    */
-  allowRecurse?: boolean;
+  allowRecurse?: boolean; // + 是否允许递归
   /**
    * @internal
    */
@@ -74,10 +74,13 @@ export class ReactiveEffect<T = any> {
     public scheduler: EffectScheduler | null = null,
     scope?: EffectScope
   ) {
+    // + 可能对于recordEffectScope方法有疑惑，其实这个方法和响应式无关。只关注响应式的话可以不作考虑。
+    // + 它的主要作用是将一个ReactiveEffect对象放入一个effectScope容器对象内，这个容器对象可以方便快捷的对容器内所有的ReactiveEffect对象和其子effectScope调用stop方法。
     recordEffectScope(this, scope);
   }
 
   run() {
+    // + 非活跃状态，直接回调原始依赖
     if (!this.active) {
       return this.fn();
     }
@@ -94,19 +97,25 @@ export class ReactiveEffect<T = any> {
       activeEffect = this;
       shouldTrack = true;
 
+      // + 位操作符，用于优化，根据递归深度记录位数，<< 左移运算符
       trackOpBit = 1 << ++effectTrackDepth;
 
+      // + 源码中maxMarkerBits取30，猜测是因为整数位运算时是按照32位计算，当1<<31时为负值了，后续负值的位运算得不到预期结果，所以取的最大30
       if (effectTrackDepth <= maxMarkerBits) {
+        // + 将当前依赖列表的所有依赖置为“已经收集”
         initDepMarkers(this);
       } else {
+        // + 不优化，直接清空所有依赖
         cleanupEffect(this);
       }
       return this.fn();
     } finally {
       if (effectTrackDepth <= maxMarkerBits) {
+        // + 断掉依赖关联
         finalizeDepMarkers(this);
       }
 
+      // + 重置位操作符
       trackOpBit = 1 << --effectTrackDepth;
 
       activeEffect = this.parent;
@@ -166,7 +175,7 @@ export function effect<T = any>(
   fn: () => T,
   options?: ReactiveEffectOptions
 ): ReactiveEffectRunner {
-  // +
+  // + 如果fn已经是effect，则指向原始函数
   if ((fn as ReactiveEffectRunner).effect) {
     fn = (fn as ReactiveEffectRunner).effect.fn;
   }
@@ -177,6 +186,7 @@ export function effect<T = any>(
     if (options.scope) recordEffectScope(_effect, options.scope);
   }
   if (!options || !options.lazy) {
+    // + 非lazy模式，立即执行
     _effect.run();
   }
   const runner = _effect.run.bind(_effect) as ReactiveEffectRunner;
